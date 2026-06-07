@@ -140,13 +140,71 @@ Terminal:
           Docker-compose up -d
 
 
-![image]()
+![image](https://github.com/user-attachments/assets/4582ae1f-842d-4c27-b804-9c34004f6523)
 
-![image]()
+![image](https://github.com/user-attachments/assets/8b2cfc55-228a-429f-8e64-b9a9e3a6b6f9)
 
-![image]()
+Luego hacemos click en el puerto 8080:8080 para acceder a la interface de usuario de Kafka.
 
-![image]()
+![image](https://github.com/user-attachments/assets/598df57b-ad1e-444f-93d7-0888ced7c930)
+
+### Creación de temas (CLI de Kafka)
+Kafka CLI se ejecuta dentro del contenedor.
+
+* **Paso 1:** Entrar en el contenedor Kafka.
+  
+ahora en terminal de docker desktop escribimos el siguiente codigo.
+
+código:
+
+        docker exec -it kafka bash
+
+
+código:
+
+        cd /opt/kafka/bin
+
+* **Paso 2:** Crear un tema.
+
+código:
+
+        ./kafka-topics.sh --create --topic orders --partitions 3 --replication-factor 1 --bootstrap-server host.docker.internal:29092
+
+        
+Deberías ver la confirmación de la creación del tema.
+
+* **Paso 3:** Verifica el tema.
+
+  código:
+  
+          ./kafka-topics.sh --list --bootstrap-server host.docker.internal:29092
+
+
+![image](https://github.com/user-attachments/assets/3357e0a2-a334-4947-8dba-0ae20d92b6bc)
+
+
+Producción esperada:
+
+Órdenes
+
+Lo que esto demuestra
+
+•	Los temas son entidades explícitas.
+
+•	Kafka no hace nada hasta que existen temas.
+
+•	La organización de datos es intencionada, no automática.
+
+
+Sal del contenedor:
+
+código:
+
+         exit
+
+
+
+
 
 ![image]()
 
