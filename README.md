@@ -77,7 +77,9 @@ En sistemas reales, los eventos contienen estructuras de datos complejas, no sol
 
 └── group_consumer.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Escalabilidad mediante Consumer Groups.
 
+________________________________________________________________________________________________________________________________________________________________________________________________________________
 ## 🏗️ DESARROLLO
+________________________________________________________________________________________________________________________________________________________________________________________________________________
 
 1.	Creamos la carpeta kafka-lab desde la terminal y luego accedemos a ella.
      
@@ -466,21 +468,335 @@ Código:
         producer.close()
 
 
-![image]()
+![image](https://github.com/user-attachments/assets/4e14529b-db24-471b-ac3f-7d62471cadb6)
 
-![image]()
+Guarda y sal.
 
-![image]()
+Por qué importa esta configuración:
 
-![image]()
+•	acks="all" → durabilidad
 
-![image]()
+•	Intentos=5 → resiliencia
 
-![image]()
+•	enable_idempotence=Verdadero → sin duplicados
 
-![image]()
 
-![image]()
+**3. Ejecutar Producer**
+
+Asegúrate de que Kafka esté en funcionamiento, entonces corre producer en power shell
+
+Código:
+
+        Python producer.py
+
+Comportamiento esperado:
+
+•	El guion sale en silencio.
+
+•	Sin salida.
+
+•	El evento se escribe correctamente.
+
+El silencio aquí significa éxito.
+
+**4. Verificar el mensaje (comprobación de CLI)**
+
+Entra en escena el contenedor Kafka.
+
+Terminal docker desktop:
+
+                         Docker exec -it kafka bash
+
+Terminal docker desktop:
+
+                         Cd /opt/kafka/bin
+
+Terminal docker desktop:
+
+                         ./kafka-console-consumer.sh --topic orders --from-beginning --bootstrap-server host.docker.internal:29092
+
+Debes ver:
+
+order_created
+
+![image](https://github.com/user-attachments/assets/f586a282-88a8-4d50-96d3-b3f96efcb2fd)
+
+•	Ahora verificamos en Kafka UI.
+
+![image](https://github.com/user-attachments/assets/e3034a62-e339-4b2b-8fc3-1f570edce913)
+
+![image](https://github.com/user-attachments/assets/fb9b35a5-06be-4b2b-ac55-5921c3ea9898)
+
+Sal del contenedor.
+
+Código:
+
+        exit
+
+Esto confirma:
+
+  •	El productor escribió con éxito.
+  
+  •	Los datos son duraderos.
+  
+  •	Los consumidores leen de forma independiente a los productores.
+
+________________________________________________________________________________________________________________________________________________________________________________________________________________
+### Laboratorio 05: Usuario de Python (Desde Cero)
+________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+Kafka y el entorno de Python ya existen desde el laboratorio de Producers.
+
+Si es necesario, activa tu entorno.
+
+Código:
+
+        kafka-env\Scripts\activate # Windows
+
+
+Asegúrate de que la biblioteca cliente de Kafka esté instalada.
+
+Código:
+
+        pip install kafka-python
+
+
+* **Paso 1:** Crear código para consumidores
+
+En VSC crea un archivo:
+
+Nombre <mark>consumer.py</mark>
+
+Código:
+
+        from kafka import KafkaConsumer
+        consumer = KafkaConsumer(
+            "orders",
+            bootstrap_servers="localhost:29092", 
+            # group_id= "cosume_orders",
+            auto_offset_reset="earliest",
+            enable_auto_commit=True
+        )
+        print("Esperando mensajes en el tópico 'orders'...")
+        for msg in consumer:
+            print(f"Mensaje recibido: {msg.value.decode('utf-8')}")
+
+            
+•	Ahora verificamos en Kafka UI.
+
+![image](https://github.com/user-attachments/assets/1c83d0e4-ac03-4828-abce-18cf0943f069)
+
+
+Guarda y sal.
+
+Explicaciones clave de configuración:
+
+  •	auto_offset_reset="más antigua"
+  
+  → Empieza desde el principio si no existe desplazamiento
+  
+  •	enable_auto_commit=Verdadero
+  
+  → Kafka hace commits automáticamente
+  
+
+* **Paso 2:** Ejecutar el consumidor
+
+<mark>Python consumer.py</mark>
+
+Comportamiento esperado:
+
+  •	Se imprimen los mensajes existentes.
+  
+  •	El proceso sigue funcionando.
+  
+  •	Los nuevos mensajes aparecen inmediatamente cuando se producen.
+
+  
+Esto demuestra:
+
+  •	Consumo basado en tirones.
+  
+  •	Lecturas secuenciales.
+  
+  •	Estado persistente del consumidor.
+
+  
+Detener al consumidor usando Ctrl + C.
+
+________________________________________________________________________________________________________________________________________________________________________________________________________________
+5. Lab: Gestionar múltiples consumidores en un mismo grupo
+________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+Kafka y el entorno Python ya existen.
+
+* **Paso 1:** Crear un consumidor consciente del grupo.
+  
+Crea un archivo:
+
+Nombre <mark>"group_consumer.py"</mark>
+
+Código:
+
+        from kafka import KafkaConsumer
+        import os
+
+        consumer = KafkaConsumer(
+            "orders",
+            bootstrap_servers="localhost:29092",
+            group_id="orders-processing-group",
+            auto_offset_reset="earliest",
+            enable_auto_commit=True
+        )
+
+        for msg in consumer:
+            print(f"Consumer {os.getpid()} -> {msg.value}")
+
+Guarda y sal.
+
+Puntos clave:
+
+  •	group_id define el grupo de consumidores.
+  
+  •	Todos los consumidores con la misma group_id coordinados.
+  
+  •	Los desplazamientos se comparten dentro del grupo.
+
+* **Paso 2:** Gestiona a varios consumidores.
+  
+Abre dos terminales separados.
+
+En ambos terminales:
+
+Código:
+
+        Python group_consumer.py
+
+
+Ahora tienes dos consumidores en el mismo grupo.
+
+* **Paso 3:** Producir mensajes
+
+En otra terminal:
+
+                  Docker exec -it kafka bash
+                  
+Empieza a ser productor y aplica el siguiente código en docker destop.
+
+Código:
+
+        ./kafka-console-producer.sh --topic orders --bootstrap-server host.docker.internal:29092
+
+Escribe mensajes:
+
+  Orden-10
+  
+  Orden-11
+  
+  Orden-12
+  
+  Orden-13
+
+![image](https://github.com/user-attachments/assets/bacb1116-fa9d-4a14-8a25-0f6a3cdf739a)
+
+![image](https://github.com/user-attachments/assets/f9bb8460-7d4f-412f-8e1f-db5233238c1a)
+
+* **Paso 4:** Observa el comportamiento
+  
+Qué hay que señalar claramente:
+
+  •	Los mensajes se reparten  entre los consumidores.
+  
+  •	No aparece ningún mensaje dos veces.
+  
+  •	Cada consumidor procesa diferentes particiones.
+  
+Ahora para un consumidor.
+
+Observa:
+
+  •	El consumidor restante se hace cargo de todas las particiones.
+  
+  •	El procesamiento continúa automáticamente.
+  
+Esto demuestra:
+
+•	Compartición de carga.
+
+•	Tolerancia a fallos.
+
+•	Sin duplicaciones.
+
+Sal del contenedor:
+
+                    exit
+                    
+
+________________________________________________________________________________________________________________________________________________________________________________________________________________
+### Laboratorio 07: Producción y Observación de Mensajes Clave
+________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+Kafka debe estar ya en funcionamiento (configuración basada en Docker).
+
+* **Paso 1:** Entrar en el contenedor Kafka
+
+Terminal docker desktop:
+
+                         docker Exec -it kafka bash
+                         
+
+* **Paso 2:** Iniciar Productor de Consola con soporte clave.
+
+  Terminal docker desktop:
+  
+                            ./kafka-console-producer.sh --topic orders --bootstrap-server host.docker.internal:29092 --property "parse.key=true" --property "key.separator=:"
+
+
+Qué significa esta configuración:
+
+•	El formato de entrada es clave:valor.
+
+•	Kafka hace hashes de la clave.
+
+•	El valor se trata como la carga útil.
+
+
+* **Paso 3:** Producir mensajes clave.
+  
+Escribe exactamente:
+
+  101:order_created
+  
+  101:order_paid
+
+  101:order_shipped
+
+  205:order_created
+
+  205:order_cancelled
+
+
+* **Paso 4:** Observa el comportamiento (conceptual).
+  
+Lo que debe entenderse:
+
+  •	Los eventos 101 van a la misma partición.
+  
+  •	Su orden se preserva estrictamente.
+  
+  •	205 eventos van a una partición diferente (puede ser la misma partición).
+  
+  •	El orden es independiente entre las teclas.
+  
+Si se muestran los detalles de la partición, la asignación de particiones será consistente.
+
+Sal del contenedor cuando termines:
+
+Terminal: 
+
+          exit
+
+![image](https://github.com/user-attachments/assets/66427039-f0c0-4e93-91af-d93250c67724)
 
 ![image]()
 
