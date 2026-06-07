@@ -148,7 +148,7 @@ Luego hacemos click en el puerto 8080:8080 para acceder a la interface de usuari
 
 ![image](https://github.com/user-attachments/assets/598df57b-ad1e-444f-93d7-0888ced7c930)
 
-### Creación de temas (CLI de Kafka)
+### Laboratorio 01: Creación de temas (CLI de Kafka)
 Kafka CLI se ejecuta dentro del contenedor.
 
 * **Paso 1:** Entrar en el contenedor Kafka.
@@ -202,40 +202,254 @@ código:
 
          exit
 
+### Laboratorio 02: Inspección de particiones
+
+Kafka ya está huyendo desde el laboratorio anterior.
+
+**Paso 1:** Entrar en el contenedor Kafka
+
+terminal docker desktop:
+
+                         docker exec -it kafka bash
+
+terminal docker desktop:
+
+                         cd /opt/kafka/bin
+
+**Paso 2:** Describe el tema
+
+terminal docker desktop:
+
+                          ./kafka-topics.sh --describe --topic orders --bootstrap-server host.docker.internal:29092
+
+* La producción esperada incluye:
+
+   •	Nombre del tema
+   •	Recuento de particiones
+   •	Líder
+   •	Réplicas
+   •	ISR (Réplicas Sincronizadas — réplicas completamente al día)
+   •	ELR = Réplicas de Líder Elegibles
+
+•	Ahora observamos en docker desktop.
+
+![image](https://github.com/user-attachments/assets/ef4d99c6-2dcb-467e-b1e1-c02952704b41)
+
+![image](https://github.com/user-attachments/assets/a9d7307e-68cf-4c75-8736-b2c085c64047)
 
 
+•	Y también observamos en Kafka UI (localhost:8080) en la pestaña de brokers y topics.
+
+![image](https://github.com/user-attachments/assets/8613db9f-cc22-42d5-854f-bcaf09a04129)
+
+![image](https://github.com/user-attachments/assets/5065df14-8d5d-4b5d-895b-bebbccd0511b)
+
+**Paso 3:** Qué debes saber
+
+   •	Cada partición se lista por separado
+   
+   •	Cada partición tiene:
+   
+      o	Su propio líder
+      
+      o	Su propio juego réplica
+      
+   •	Kafka trata las particiones como unidades independientes
+   
+   En esta fase:
+
+   •	Sin productores
+
+   •	Sin consumidores
+
+   Este laboratorio trata sobre la estructura, no el flujo de datos.
+
+   Paso 4: Sal del contenedor
+
+   Terminal: 
+    
+             exit
 
 
-![image]()
+### Laboratorio 03: Observación de desplazamientos y retraso del consumidor
 
-![image]()
+Este es el primer laboratorio donde se observan desplazamientos mediante herramientas Kafka.
 
-![image]()
+Kafka ya está huyendo.
 
-![image]()
+**Paso 1:** Producir datos de prueba
 
-![image]()
+Entra en escena el contenedor Kafka:
 
-![image]()
+terminal docker desktop:
 
-![image]()
+          docker exec -it kafka bash
 
-![image]()
+terminal docker desktop:
 
-![image]()
+          cd /opt/kafka/bin
 
-![image]()
+          
+Empieza un productor de consola:
 
-![image]()
+terminal docker desktop:
 
-![image]()
+                         ./kafka-console-producer.sh --topic orders --bootstrap-server host.docker.internal:29092
 
-![image]()
+Escribe algunos mensajes manualmente:
 
-![image]()
+Orden-1
 
-![image]()
+Orden-2
 
-![image]()
+Orden-3
+
+Orden-4
+
+•	Observamos en docker desktop.
+
+![image](https://github.com/user-attachments/assets/784adde6-a232-4d84-8d67-d51a8d15c9fc)
+
+•	También observamos en Kafka UI
+
+![image](https://github.com/user-attachments/assets/91fab1f2-7466-4aef-b99d-bdcc829767b4)
+
+![image](https://github.com/user-attachments/assets/ebb4c875-4336-43a7-998d-bdabc06235e1)
+
+Salir del productor con Ctrl+C.
+
+**Paso 2:** Crear un grupo de consumidores.
+
+Ejecuta una consola para consumidores.
+
+terminal docker desktop:
+
+                         ./kafka-console-consumer.sh --topic orders --group orders-consumer-group --from-beginning --bootstrap-server host.docker.internal:29092
+
+
+![image](https://github.com/user-attachments/assets/617de1f1-359f-467c-8439-b5969fb96b6f)
+
+•	Verificamos en Kafka UI
+
+![image](https://github.com/user-attachments/assets/9b951e3a-5850-437d-ba96-55a1fa5f641f)
+
+![image](https://github.com/user-attachments/assets/abf4236f-eb2b-4e7b-a4c1-701bdef8eb36)
+
+Déjalo leer mensajes y luego detenerlo con Ctrl+C.
+
+Lo que acaba de pasar:
+
+•	Se creó un grupo de consumidores (grupo de consumidores = compartidos coordinados de los consumidores)
+
+•	Se comprometían los desplazamientos  para cada partición
+
+**Paso 3:** Inspeccionar el retardo del grupo de consumidores
+
+Corre:
+
+       ./kafka-consumer-groups.sh --describe --group orders-consumer-group --bootstrap-server host.docker.internal:29092
+
+•	Aplicamos el comando en docker desktop.
+
+![image](https://github.com/user-attachments/assets/32ddb248-2a0e-4c5e-a8dd-471624e1237b)
+
+•	Verificamos los resultados en Kafka UI.
+
+![image](https://github.com/user-attachments/assets/a41036fd-ebc4-46b0-bc96-d47900832380)
+
+![image](https://github.com/user-attachments/assets/d99d58b2-3ede-49d1-aa13-957636698f42)
+
+![image](https://github.com/user-attachments/assets/5deeabe8-bea8-4db3-bf71-c616807242c7)
+
+Explícado explícitamente en pantalla:
+
+•	DESPLAZAMIENTO DE CORRIENTE→ dónde se encuentra ahora el consumidor.
+
+•	LOG-END-OFFSET →  último evento en la partición.
+
+•	LAG → qué tan atrasado está el consumidor.
+
+Esto demuestra tres hechos clave:
+
+•	Kafka rastrea posiciones, no borra mensajes.
+
+•	Kafka sabe exactamente cuánto atrasa un consumidor.
+
+•	Los mensajes siguen existiendo incluso después de ser consumidos.
+
+**Paso 4:** Sal del contenedor
+
+Terminal: 
+
+          exit
+
+### Laboratorio 03: Productor de Python (Desde Cero)
+
+Este es el primer cliente Kafka real, así que la configuración es explícita e innegociable.
+
+1. Configuración del entorno (Python)
+   
+* Paso 1: Verificar Python
+
+  Abre una terminal en power shwell
+
+Código:
+
+        Python --versión
+
+Debes ver Python 3.10 o superior.
+
+* Paso 2: Crear un entorno virtual (recomendado)
+
+ Código:
+
+         python -m venv kafka-env
+
+
+* **En Windows**
+
+Código:
+
+        kafka-env\Scripts\activate 
+
+* **# Linux / macOS**
+
+Código:
+
+        kafka-env/bin/activate 
+
+
+Esto aísla las dependencias de Kafka de tu sistema en Python.
+
+**Paso 3:** Instalar la biblioteca cliente de Kafka
+
+Código:
+
+        pip install kafka-python-ng
+
+![image](https://github.com/user-attachments/assets/c37b3a4b-c9b5-4e5d-825c-df93e9f3a521)
+
+**2. Código productor en Python**
+
+Crea un archivo llámala <mark>"producer.py"</mark>
+
+![image](https://github.com/user-attachments/assets/fc44c790-7af1-4f3d-a792-f6385e252851)
+
+Pega exactamente el siguiente código.
+
+Código:
+
+        from kafka import KafkaProducer
+        producer = KafkaProducer(
+            bootstrap_servers="localhost:29092",
+            acks="all",
+            retries=5
+        )
+        print("Conectado a Kafka. Enviando mensaje...")
+        producer.send("orders", b"order_created")
+        producer.flush()
+        print("¡Mensaje enviado exitosamente al tópico 'orders'!")
+        producer.close()
+
 
 ![image]()
