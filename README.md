@@ -270,7 +270,7 @@ terminal docker desktop:
 
    Este laboratorio trata sobre la estructura, no el flujo de datos.
 
-   Paso 4: Sal del contenedor
+   **Paso 4:** Sal del contenedor
 
    Terminal: 
     
