@@ -225,11 +225,17 @@ terminal docker desktop:
 * La producción esperada incluye:
 
    •	Nombre del tema
+  
    •	Recuento de particiones
+  
    •	Líder
+  
    •	Réplicas
+  
    •	ISR (Réplicas Sincronizadas — réplicas completamente al día)
+  
    •	ELR = Réplicas de Líder Elegibles
+  
 
 •	Ahora observamos en docker desktop.
 
