@@ -71,7 +71,7 @@ En sistemas reales, los eventos contienen estructuras de datos complejas, no sol
 
 ├── json_producer.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Serialización de eventos complejos.
 
-├── consumer.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Consumer con Auto-Commit.
+├── consumer.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Consumer con Auto-Commit.
 
 ├── manual_commit_consumer.py&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# Control fino de Offsets (At-Least-Once).
 
