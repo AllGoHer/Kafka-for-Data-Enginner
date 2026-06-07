@@ -148,9 +148,10 @@ Luego hacemos click en el puerto 8080:8080 para acceder a la interface de usuari
 
 ![image](https://github.com/user-attachments/assets/598df57b-ad1e-444f-93d7-0888ced7c930)
 
-================================================================================================================================================================================================================
+________________________________________________________________________________________________________________________________________________________________________________________________________________
 ### Laboratorio 01: Creación de temas (CLI de Kafka)
-================================================================================================================================================================================================================
+________________________________________________________________________________________________________________________________________________________________________________________________________________
+
 Kafka CLI se ejecuta dentro del contenedor.
 
 * **Paso 1:** Entrar en el contenedor Kafka.
@@ -185,7 +186,7 @@ Deberías ver la confirmación de la creación del tema.
 ![image](https://github.com/user-attachments/assets/3357e0a2-a334-4947-8dba-0ae20d92b6bc)
 
 
-Producción esperada:
+* Producción esperada:
 
 Órdenes
 
@@ -204,7 +205,9 @@ código:
 
          exit
 
+________________________________________________________________________________________________________________________________________________________________________________________________________________
 ### Laboratorio 02: Inspección de particiones
+________________________________________________________________________________________________________________________________________________________________________________________________________________
 
 Kafka ya está huyendo desde el laboratorio anterior.
 
@@ -264,13 +267,13 @@ terminal docker desktop:
       
    •	Kafka trata las particiones como unidades independientes
    
-   En esta fase:
+     En esta fase:
 
-   •	Sin productores
+       •	Sin productores
 
-   •	Sin consumidores
+       •	Sin consumidores
 
-   Este laboratorio trata sobre la estructura, no el flujo de datos.
+Este laboratorio trata sobre la estructura, no el flujo de datos.
 
    **Paso 4:** Sal del contenedor
 
@@ -278,8 +281,9 @@ terminal docker desktop:
     
              exit
 
-
+________________________________________________________________________________________________________________________________________________________________________________________________________________
 ### Laboratorio 03: Observación de desplazamientos y retraso del consumidor
+________________________________________________________________________________________________________________________________________________________________________________________________________________
 
 Este es el primer laboratorio donde se observan desplazamientos mediante herramientas Kafka.
 
@@ -371,19 +375,19 @@ Corre:
 
 Explícado explícitamente en pantalla:
 
-•	DESPLAZAMIENTO DE CORRIENTE→ dónde se encuentra ahora el consumidor.
+  •	DESPLAZAMIENTO DE CORRIENTE→ dónde se encuentra ahora el consumidor.
 
-•	LOG-END-OFFSET →  último evento en la partición.
+  •	LOG-END-OFFSET →  último evento en la partición.
 
-•	LAG → qué tan atrasado está el consumidor.
+  •	LAG → qué tan atrasado está el consumidor.
 
 Esto demuestra tres hechos clave:
 
-•	Kafka rastrea posiciones, no borra mensajes.
+  •	Kafka rastrea posiciones, no borra mensajes.
 
-•	Kafka sabe exactamente cuánto atrasa un consumidor.
+  •	Kafka sabe exactamente cuánto atrasa un consumidor.
 
-•	Los mensajes siguen existiendo incluso después de ser consumidos.
+  •	Los mensajes siguen existiendo incluso después de ser consumidos.
 
 **Paso 4:** Sal del contenedor
 
@@ -391,7 +395,9 @@ Terminal:
 
           exit
 
-### Laboratorio 03: Productor de Python (Desde Cero)
+________________________________________________________________________________________________________________________________________________________________________________________________________________
+### Laboratorio 04: Productor de Python (Desde Cero)
+________________________________________________________________________________________________________________________________________________________________________________________________________________
 
 Este es el primer cliente Kafka real, así que la configuración es explícita e innegociable.
 
@@ -459,5 +465,41 @@ Código:
         print("¡Mensaje enviado exitosamente al tópico 'orders'!")
         producer.close()
 
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
 
 ![image]()
