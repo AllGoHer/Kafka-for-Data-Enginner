@@ -61,14 +61,21 @@ En sistemas reales, los eventos contienen estructuras de datos complejas, no sol
 
 ## 📂 Estructura del Laboratorio
 
-├── docker-compose.yml          # Clúster KRaft moderno (Sin ZooKeeper)
-├── producer.py                 # Producer básico con acks="all"
-├── producer_retries.py         # Resiliencia de red
-├── Producer_idempotent.py      # Transacciones y Exactly-Once Semantics
-├── json_producer.py            # Serialización de eventos complejos
-├── consumer.py                 # Consumer con Auto-Commit
-├── manual_commit_consumer.py   # Control fino de Offsets (At-Least-Once)
-└── group_consumer.py           # Escalabilidad mediante Consumer Groups
+├── docker-compose.yml&nbsp;&nbsp;&nbsp;          # Clúster KRaft moderno (Sin ZooKeeper)
+
+├── producer.py&nbsp;&nbsp;&nbsp;                 # Producer básico con acks="all"
+
+├── producer_retries.py&nbsp;&nbsp;&nbsp;         # Resiliencia de red.
+
+├── Producer_idempotent.py&nbsp;&nbsp;&nbsp;      # Transacciones y Exactly-Once Semantics.
+
+├── json_producer.py&nbsp;&nbsp;&nbsp;            # Serialización de eventos complejos.
+
+├── consumer.py&nbsp;&nbsp;&nbsp;                 # Consumer con Auto-Commit.
+
+├── manual_commit_consumer.py&nbsp;&nbsp;&nbsp;   # Control fino de Offsets (At-Least-Once).
+
+└── group_consumer.py&nbsp;&nbsp;&nbsp;           # Escalabilidad mediante Consumer Groups.
 
 ![image]()
 
