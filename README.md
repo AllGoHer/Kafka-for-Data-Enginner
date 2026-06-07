@@ -625,7 +625,7 @@ Esto demuestra:
 Detener al consumidor usando Ctrl + C.
 
 ________________________________________________________________________________________________________________________________________________________________________________________________________________
-5. Lab: Gestionar múltiples consumidores en un mismo grupo
+### Laboratorio 06: Gestionar múltiples consumidores en un mismo grupo
 ________________________________________________________________________________________________________________________________________________________________________________________________________________
 
 Kafka y el entorno Python ya existen.
@@ -798,24 +798,396 @@ Terminal:
 
 ![image](https://github.com/user-attachments/assets/66427039-f0c0-4e93-91af-d93250c67724)
 
-![image]()
+________________________________________________________________________________________________________________________________________________________________________________________________________________
+### Laboratorio 08: Serialización JSON con un productor Python
+________________________________________________________________________________________________________________________________________________________________________________________________________________
 
-![image]()
+Este laboratorio demuestra que Kafka almacena bytes en bruto, no datos estructurados.
 
-![image]()
+Kafka debe estar ya funcionando en Docker.
 
-![image]()
+* **Paso 1:** Verificar la instalación de Python.
+* 
+Asegúrate de que Python 3.10 o versión posterior esté instalada:
 
-![image]()
+en power shell:
 
-![image]()
+                Python --versión
 
-![image]()
 
-![image]()
+* **Paso 2:** Crear un entorno virtual
 
-![image]()
+terminal:
 
-![image]()
+          Python -m venv kafka-env
 
-![image]()
+Actívalo en Windows:
+
+                     kafka-env\Scripts\activate
+
+Actívalo en Mac / Linux:
+
+                         kafka-env/bin/activate
+
+
+* **Paso 3:** Instalar la biblioteca cliente de Kafka.
+
+Código: 
+
+        pip install kafka-python
+
+
+* **Paso 4:** Crear un productor JSON
+  
+En VSC crea el archivo:
+
+Llámalo <mark>"json_producer.py"</mark>
+
+Ahora ingresa el siguiente código.
+
+Código:
+
+        from kafka import KafkaProducer
+        import json
+
+        producer = KafkaProducer(
+            bootstrap_servers="host.docker.internal:29092",
+            value_serializer=lambda v: json.dumps(v).encode("utf-8")
+        )
+
+        producer.send(
+            "orders",
+            {
+                "order_id": 101,
+                "status": "CREATED",
+                "amount": 250.75
+            }
+        )
+
+        producer.flush()
+        print("JSON event enviado")
+
+
+Guarda y sal.
+
+* **Paso 5:** Ejecutar al productor.
+
+Código:
+
+        Python json_producer.py
+
+![image](https://github.com/user-attachments/assets/f8d06b6d-dfd5-4afd-a54a-78f09c647e71)
+
+* **Paso 6:** Consume los datos en bruto.
+* 
+Entra en escena el contenedor Kafka.
+
+Código:
+
+        docker exec -it Kafka bash
+
+
+Código:
+
+        ./kafka-console-consumer.sh --topic orders --from-beginning --bootstrap-server host.docker.internal:29092
+
+![image](https://github.com/user-attachments/assets/a155ddbf-72c5-47b3-a3d8-328ba18a0a65)
+
+![image](https://github.com/user-attachments/assets/628c1565-6a43-4882-9731-d906e3e506f3)
+
+Lo que esto demuestra:
+
+•	La salida es una cadena JSON en bruto.
+
+•	Kafka no lo analizó ni validó.
+
+•	Kafka solo almacenaba y devolvía bytes.
+
+
+Sal del contenedor:
+
+Código:
+
+        exit
+
+
+#### ☑️ Reglas prácticas que debes interiorizar
+
+   •	Kafka no impone esquemas — debes hacerlo.
+   
+   •	La serialización define la compatibilidad, no Kafka.
+   
+  •	La evolución del esquema es una decisión de diseño, no un interruptor de función.
+  
+  •	JSON se rompe en silencio; Avro falla de forma segura.
+  
+  •	Cambiar la serialización más adelante es doloroso y arriesgado.
+  
+Los errores de serialización se acumulan con el tiempo.
+
+#### ☑️ Conclusión técnica final
+
+  • La serialización no es una elección de formato.
+  
+  • Es un contrato de datos a largo plazo.
+
+
+  • JSON es fácil.
+
+  • Avro tiene razón.
+  
+  • Protobuf es estricto.
+  
+  • Ignorar esta decisión crea una deuda técnica permanente y Kafka no te protegerá de ella.
+
+________________________________________________________________________________________________________________________________________________________________________________________________________________
+### Laboratorio 09: Consumidor de Commit Manual
+________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+Se asume que Kafka y el entorno Python existen.
+
+* **Paso 1:** Crear un consumidor con commit manual.
+  
+Crea el archivo en VSC con el nombre <mark>"manual_commit_consumer.py"</mark>
+
+Código:
+
+        from kafka import KafkaConsumer
+        consumer = KafkaConsumer(
+            "orders",
+            bootstrap_servers="localhost:29092",
+            group_id="orders_consume_manualoffset",
+            enable_auto_commit=False,
+            auto_offset_reset="earliest"
+        )
+
+        for msg in consumer:
+            print("Processing:", msg.value)
+            # simulan el procesamiento exitoso
+            consumer.commit()
+            print("Offset committed")
+
+
+Corre:
+
+        Python manual_commit_consumer.py
+
+
+![image](https://github.com/user-attachments/assets/e3e45b67-e662-404e-917f-b5ed4a3e5a60)
+
+![image](https://github.com/user-attachments/assets/eacb3115-a964-4c07-84ec-ecca1249e10e)
+
+
+* **Paso 2:** Lo que demuestra este laboratorio.
+  
+Explícación clara:
+
+•	El offset se compromete tras el procesamiento.
+
+•	Si el consumidor se bloquea antes de confirmar, el mensaje se reprocesa.
+
+•	No se produce pérdida de datos.
+
+•	El procesamiento duplicado es posible y esperado.
+
+Esto es , al menos, una entrega por diseño.
+
+* **Paso 3:** Contraste con el Auto Commit (Conceptual).
+  
+•	El auto commit puede registrar desplazamientos antes de procesarlo.
+
+•	Bloqueo tras confirmar → mensaje omitido.
+
+•	Más rápido, pero inseguro para flujos de trabajo críticos.
+
+No modifiques el código en vivo, este contraste tiene que ver con el diseño, no con la sintaxis.
+
+#### ☑️ Reglas prácticas que debes interiorizar
+
+•	Los commits definen el comportamiento de recuperación.
+
+•	Kafka no sabe que tu procesamiento ha funcionado.
+
+•	El autocommit intercambia la corrección por velocidad.
+
+•	El commit manual intercambia velocidad para controlar.
+
+•	Los sistemas correctos eligen el control
+Si no elegiste explícitamente una estrategia de commit, la elegiste por accidente.
+
+#### ☑️ Conclusión técnica final
+
+Los comits de consumo definen dónde reside la corrección.
+
+  •	Los commits automáticos optimizan la comodidad.
+  
+  •	Los commits manuales optimizan la corrección.
+  
+Para sistemas reales con efectos secundarios y estado:
+
+Los commits manuales ganan. Siempre.
+
+_______________________________________________________________________________________________________________________________________________________________________________________________________________
+### Laboratorio 10: Entendiendo la Semántica de Entrega con Python
+_______________________________________________________________________________________________________________________________________________________________________________________________________________
+
+Se asume que existen entornos Kafka y Python.
+
+Laboratorio Parte 1: Al menos una vez (Comportamiento por defecto)
+Productor con reintentos
+
+Crea en VSC el archivo:
+
+Nombre <mark>producer_retries.py</mark>
+
+ahora pega el siguiente código.
+
+Código:
+
+        from kafka import KafkaProducer
+
+        producer = KafkaProducer(
+           bootstrap_servers="localhost:29092",
+           retries=5
+        )
+
+        producer.send("orders", b"order-100")
+        producer.flush()
+        print("Mensaje enviado con reintentos activados")
+
+
+Corre:
+
+       Python producer_retries.py
+
+
+Lo que esto demuestra:
+
+•	El productor intenta de nuevo por fallo transitorio.
+
+•	Si los acuses de recibo son inciertos, pueden producirse duplicados.
+
+•	Kafka prioriza la durabilidad sobre la singularidad.
+
+Consumidor con commit manual
+
+Crea el archivo:
+
+<mark>consumer_manual_commit.py</mark>
+
+Código:
+
+       from kafka import KafkaConsumer
+
+        consumer = KafkaConsumer(
+           "orders",
+            bootstrap_servers="localhost:29092",
+                   group_id="manual-orders-processing-group",
+            enable_auto_commit=False,
+            auto_offset_reset="earliest"
+        )
+
+         to sms in consumer:
+            print("Processing:", msg.value)
+            consumer.commit()
+
+
+Lo que esto demuestra:
+
+  •	El offset se compromete tras el procesamiento.
+  
+  •	Bloqueo antes de que se reprocese el mensaje de → de compromiso.
+  
+  •	Este es  un comportamiento clásico de al menos una vez.
+
+
+**Laboratorio Parte 2: Como mucho a la vez (Contraste conceptual)**
+
+Cambiar la configuración del consumidor:
+
+enable_auto_commit=Cierto, sin vínculos
+
+* **Explicación:**
+  
+  •	El offset se compromete antes de procesarse.
+  
+  •	Se cierra durante el procesamiento → se pierde el mensaje.
+  
+  •	No hay duplicados, pero la corrección es más débil.
+  
+No se requiere más código.
+
+La diferencia de comportamiento es conceptual y crítica.
+
+* **Exactly-Once (Vista previa)**
+  
+Exactly-once requiere:
+
+•	Productores idempotentes.
+
+•	Transacciones de Kafka.
+
+•	Lógica coordinada productor-consumidor
+
+**Paso 1:** Crear archivo.
+
+Nombre <mark>"Producer_idempotent.py"</mark>
+
+
+**Paso 2:** Codificar y guardar.
+
+Código:
+
+        from kafka import KafkaProducer
+        producer = KafkaProducer(
+            bootstrap_servers="localhost:29092",
+            acks="all",
+            intentos=5,
+            enable_idempotence=True,
+            transactional_id="mi-productor-transaccional"
+        )
+        # OBLIGATORIO
+        producer.init_transactions()
+
+        try:
+            producer.begin_transaction()
+            producer.send ("orders", b"orden-101")
+            producer.commit_transaction()
+        except Exception as e:
+            producer.abort_transaction()
+            print("Transaction aborted:", e)
+
+        producer.close()
+        print("Message sent with exactly-once semantics")
+
+**Paso 3:** Correr
+
+
+#### ☑️ Reglas prácticas que debes interiorizar
+
+  •	Kafka no elige la semántica — tú sí.
+
+  •	Al menos una vez es el predeterminado del sector.
+
+  •	Los duplicados son normales; Diseño para ellos.
+
+  •	Exactly-once aumenta la complejidad y la latencia.
+
+  •	Las garantías de fiabilidad son compensaciones, no virtudes.
+
+Si no razonas sobre los caminos de fallo, tus garantías son imaginarias.
+
+#### ☑️ Conclusión técnica final
+
+La semántica de entrega son decisiones de ingeniería, no casillas de verificación.
+
+  •	Como mucho, a la vez cambia la corrección por la velocidad.
+  
+  •	Al menos una vez cambia la simplicidad por duplicación.
+  
+  •	Exactamente una vez intercambia complejidad por precisión.
+  
+  • Elegir garantías a ciegas crea sistemas frágiles.
+  
+  • El diseño intencional crea diseños resilientes.
+
